@@ -2,9 +2,11 @@
 using UnityEngine;
 
 // 총을 구현
-public class Gun : MonoBehaviour {
+public class Gun : MonoBehaviour 
+{
     // 총의 상태를 표현하는 데 사용할 타입을 선언
-    public enum State {
+    public enum State 
+    {
         Ready, // 발사 준비됨
         Empty, // 탄알집이 빔
         Reloading // 재장전 중
@@ -30,22 +32,26 @@ public class Gun : MonoBehaviour {
 
     private float lastFireTime; // 총을 마지막으로 발사한 시점
 
-    private void Awake() {
+    private void Awake() 
+    {
         // 사용할 컴포넌트의 참조 가져오기
     }
 
-    private void OnEnable() {
+    private void OnEnable() 
+    {
         // 총 상태 초기화
     }
 
     // 발사 시도
-    public void Fire() {
+    public void Fire() 
+    {
 
     }
 
     // 실제 발사 처리
-    private void Shot() {
-      
+    private void Shot() 
+    {
+    
     }
 
     // 발사 이펙트와 소리를 재생하고 탄알 궤적을 그림
