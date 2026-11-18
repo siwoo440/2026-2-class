@@ -27,7 +27,7 @@ public class Gun : MonoBehaviour
 
     private float fireDistance = 50f; // 사정거리
 
-    public int ammoRemain = 100; // 남은 전체 탄알
+    public int ammoRemain = 999; // 남은 전체 탄알
     public int magAmmo; // 현재 탄창에 남아있는 탄알
 
     private float lastFireTime; // 총을 마지막으로 발사한 시점

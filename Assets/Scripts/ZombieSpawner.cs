@@ -8,7 +8,11 @@ public class ZombieSpawner : MonoBehaviour {
     public ZombieData[] zombieDatas; // 사용할 좀비 셋업 데이터들
     public Transform[] spawnPoints; // 좀비 AI를 소환할 위치들
 
-    private List<Zombie> zombies = new List<Zombie>(); // 생성된 좀비들을 담는 리스트
+    [Header("Boss Settings")]
+    [SerializeField] private ZombieData bossZombieData;
+
+    private const int BossWaveInterval = 5;
+    private readonly List<Zombie> zombies = new List<Zombie>(); // 생성된 좀비들을 담는 리스트
     private int wave; // 현재 웨이브
 
     private void Update() {
@@ -38,17 +42,31 @@ public class ZombieSpawner : MonoBehaviour {
     private void SpawnWave() {
         wave++;
         int spawnCount = Mathf.RoundToInt(wave * 1.5f);
+        bool isBossWave = wave % BossWaveInterval == 0;
+        if (isBossWave && bossZombieData == null)
+        {
+            Debug.LogWarning("ZombieSpawner의 Boss Zombie Data를 연결하세요.", this);
+        }
+
         for (int i = 0; i < spawnCount; i++)
         {
-            CreateZombie();
+            CreateZombie(isBossWave && i == 0 && bossZombieData != null);
         }
     }
 
     // 좀비를 생성하고 생성한 좀비에게 추적할 대상을 할당
-    private void CreateZombie() {
-        ZombieData zombieData = zombieDatas[Random.Range(0, zombieDatas.Length)];
+    private void CreateZombie(bool isBoss) {
+        ZombieData zombieData = isBoss
+            ? bossZombieData
+            : zombieDatas[Random.Range(0, zombieDatas.Length)];
         Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
         Zombie zombie = Instantiate(zombiePrefab, spawnPoint.position, spawnPoint.rotation);
+        zombie.transform.localScale *= Mathf.Max(0.01f, zombieData.scaleMultiplier);
+        if (isBoss)
+        {
+            zombie.gameObject.name = "Boss Zombie";
+        }
+
         zombie.Setup(zombieData);
         zombies.Add(zombie);
         zombie.onDeath += () => zombies.Remove(zombie);
