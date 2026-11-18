@@ -13,7 +13,29 @@ public class ZombieSpawner : MonoBehaviour {
 
     private const int BossWaveInterval = 5;
     private readonly List<Zombie> zombies = new List<Zombie>(); // 생성된 좀비들을 담는 리스트
+    private readonly List<ZombieData> normalZombieDatas = new List<ZombieData>();
     private int wave; // 현재 웨이브
+
+    private void Awake()
+    {
+        // 보스가 Inspector의 일반 목록에도 들어간 경우 추첨 대상에서 제외합니다.
+        if (zombieDatas != null)
+        {
+            foreach (ZombieData data in zombieDatas)
+            {
+                if (data != null && data != bossZombieData)
+                {
+                    normalZombieDatas.Add(data);
+                }
+            }
+        }
+
+        if (bossZombieData == null || normalZombieDatas.Count == 0)
+        {
+            Debug.LogError("ZombieSpawner에 Boss Zombie Data와 일반 Zombie Data를 각각 연결하세요.", this);
+            enabled = false;
+        }
+    }
 
     private void Update() {
         // 게임 오버 상태일때는 생성하지 않음
@@ -43,14 +65,10 @@ public class ZombieSpawner : MonoBehaviour {
         wave++;
         int spawnCount = Mathf.RoundToInt(wave * 1.5f);
         bool isBossWave = wave % BossWaveInterval == 0;
-        if (isBossWave && bossZombieData == null)
-        {
-            Debug.LogWarning("ZombieSpawner의 Boss Zombie Data를 연결하세요.", this);
-        }
 
         for (int i = 0; i < spawnCount; i++)
         {
-            CreateZombie(isBossWave && i == 0 && bossZombieData != null);
+            CreateZombie(isBossWave && i == 0);
         }
     }
 
@@ -58,16 +76,17 @@ public class ZombieSpawner : MonoBehaviour {
     private void CreateZombie(bool isBoss) {
         ZombieData zombieData = isBoss
             ? bossZombieData
-            : zombieDatas[Random.Range(0, zombieDatas.Length)];
+            : normalZombieDatas[Random.Range(0, normalZombieDatas.Count)];
         Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
         Zombie zombie = Instantiate(zombiePrefab, spawnPoint.position, spawnPoint.rotation);
         zombie.transform.localScale *= Mathf.Max(0.01f, zombieData.scaleMultiplier);
+        zombie.Setup(zombieData);
         if (isBoss)
         {
             zombie.gameObject.name = "Boss Zombie";
+            UIManager.instance.ShowBossHealth(zombie);
         }
 
-        zombie.Setup(zombieData);
         zombies.Add(zombie);
         zombie.onDeath += () => zombies.Remove(zombie);
         zombie.onDeath += () => Destroy(zombie.gameObject, 10f);

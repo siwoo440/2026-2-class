@@ -11,6 +11,10 @@ public class PlayerShooter : MonoBehaviour {
     private PlayerInput playerInput; // 플레이어의 입력
     private Animator playerAnimator; // 애니메이터 컴포넌트
 
+    private UIManager displayedHud;
+    private int displayedMagAmmo;
+    private int displayedReserveAmmo;
+
     private void Start() {
         // 사용할 컴포넌트들을 가져오기
         playerInput = GetComponent<PlayerInput>();
@@ -19,6 +23,7 @@ public class PlayerShooter : MonoBehaviour {
 
     private void OnEnable() {
         // 슈터가 활성화될 때 총도 함께 활성화
+        displayedHud = null;
         gun.gameObject.SetActive(true);
     }
     
@@ -40,17 +45,28 @@ public class PlayerShooter : MonoBehaviour {
             {
                 playerAnimator.SetTrigger("Reload");
             }
-            UpdateUI();
         }
     }
 
-    // 탄약 UI 갱신
-    private void UpdateUI() {
-        if (gun != null && UIManager.instance != null)
+    // 발사, 재장전 완료, 탄약 획득을 모두 처리한 뒤 실제 보유량을 표시합니다.
+    private void LateUpdate()
+    {
+        UIManager hud = UIManager.instance;
+        if (gun == null || hud == null)
         {
-            // UI 매니저의 탄약 텍스트에 탄창의 탄약과 남은 전체 탄약을 표시
-            UIManager.instance.UpdateAmmoText(gun.magAmmo, gun.ammoRemain);
+            return;
         }
+
+        if (hud == displayedHud && gun.magAmmo == displayedMagAmmo &&
+            gun.ammoRemain == displayedReserveAmmo)
+        {
+            return;
+        }
+
+        hud.UpdateAmmoText(gun.magAmmo, gun.ammoRemain);
+        displayedHud = hud;
+        displayedMagAmmo = gun.magAmmo;
+        displayedReserveAmmo = gun.ammoRemain;
     }
 
     // 애니메이터의 IK 갱신
